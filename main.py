@@ -88,7 +88,7 @@ def train(epoch):
     train_loss = 0
     correct = 0
     total = 0
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=0)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=2)
     print(trainloader)
 
     for batch_idx, (inputs, targets) in enumerate(trainloader):
