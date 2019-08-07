@@ -88,7 +88,7 @@ def train(epoch):
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=2)#**
 
     for batch_idx, (inputs, targets) in enumerate(trainloader):
-        learning_rate = args.lr - (batch_idx*(0.1/len(list((trainloader)))))
+        learning_rate = args.lr - (batch_idx*(0.1/391))#len(list((trainloader)))))
         optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, nesterov=False)# weight_decay=5e-4
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
