@@ -13,8 +13,6 @@ import argparse
 from models import *
 from utils import progress_bar
 
-end_epoch=5
-
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
@@ -23,6 +21,7 @@ args = parser.parse_args()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
+end_epoch=200
 
 # Data
 print('==> Preparing data..')
@@ -49,8 +48,8 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship'
 # Model
 print('==> Building model..')
 # net = VGG('VGG19')
-net = ResNet18()
-# net = PreActResNet18()
+# net = ResNet18()
+net = PreActResNet18()
 # net = GoogLeNet()
 # net = DenseNet121()
 # net = ResNeXt29_2x64d()
@@ -82,8 +81,9 @@ criterion = nn.CrossEntropyLoss()
 # Training
 def train(epoch):
     learning_rate = args.lr-(epoch*(args.lr/end_epoch))
+    print(args.lr,epoch,end_epoch,learning_rate)
     optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, weight_decay=5e-4, nesterov=False)
-    print('\nEpoch: %d lr=%d' % (epoch,learning_rate))
+    print('\nEpoch: %d lr=%.3f' % (epoch,learning_rate))
     net.train()
     train_loss = 0
     correct = 0
@@ -142,6 +142,6 @@ def test(epoch):
         best_acc = acc
 
 
-for epoch in range(start_epoch, end_epoch):
+for epoch in range(start_epoch, end_epoch):#end_epoch
     train(epoch)
     test(epoch)
