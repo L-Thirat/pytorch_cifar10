@@ -85,7 +85,7 @@ def train(epoch):
     train_loss = 0
     correct = 0
     total = 0
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=0)#**
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=2)#**
 
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         learning_rate = args.lr - (batch_idx*(0.1/len(list((trainloader)))))
