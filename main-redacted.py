@@ -230,10 +230,15 @@ if __name__ == '__main__':
     # y_train = np.load('y_train.npy')#**
     # y_test = np.load('y_test.npy')
 
-    X_train = np.load('data/cifar2/X_train.npy')
-    X_test  = np.load('data/cifar2/X_test.npy')
-    y_train = np.load('data/cifar2/y_train.npy')
-    y_test  = np.load('data/cifar2/y_test.npy')
+    X_train = np.load('../data/cifar2/X_train.npy')
+    X_test  = np.load('../data/cifar2/X_test.npy')
+    y_train = np.load('../data/cifar2/y_train.npy')
+    y_test  = np.load('../data/cifar2/y_test.npy')
+
+    # X_train = np.load('data/cifar2/X_train.npy')
+    # X_test  = np.load('data/cifar2/X_test.npy')
+    # y_train = np.load('data/cifar2/y_train.npy')
+    # y_test  = np.load('data/cifar2/y_test.npy')
     
     # --
     # Define model
