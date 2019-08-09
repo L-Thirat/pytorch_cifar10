@@ -50,7 +50,6 @@ class BasicBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(planes)
 
         self.shortcut = nn.Sequential()
-        self.shortcut.add(nn.ReLU(alpha=0.125))
         if stride != 1 or in_planes != self.expansion*planes:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
@@ -99,7 +98,7 @@ class ResNet(nn.Module):
         self.in_planes = 16
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=input_ch, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(16, eps=1e-5, momentum=args.momentum, affine=False, track_running_stats=False)
+        self.bn1 = nn.BatchNorm2d(16, eps=1e-10, momentum=args.momentum, affine=False, track_running_stats=False)
         flattened_list = [y for x in resd_block for y in x]
         flattened_list = list(dict.fromkeys(flattened_list))
         self.layer1 = self._make_layer(block, flattened_list[0], num_blocks[0], stride=1,alpha=0.125)
@@ -155,7 +154,11 @@ def train_one_epoch(model, dataloader):
     # ... your code here ...
     model.train()
     for batch_idx, (inputs, targets) in enumerate(dataloader):
-        learning_rate = args.lr - (batch_idx*(args.lr/(len(list(dataloader)))))
+        # learning_rate = args.lr - (batch_idx*(args.lr/(len(list(dataloader)))))
+        if batch_idx>9:
+            learning_rate=0.001
+        elif batch_idx>4:
+            learning_rate=0.01
         optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=args.momentum, nesterov=False)# weight_decay=5e-4
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
