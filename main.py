@@ -53,7 +53,7 @@ class BasicBlock(nn.Module):
         if stride != 1 or in_planes != self.expansion*planes:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(self.expansion*planes)
+                nn.BatchNorm2d(self.expansion*planes),
             )
 
     def forward(self, x):
@@ -98,7 +98,7 @@ class ResNet(nn.Module):
         self.in_planes = 16
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=input_ch, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(16, eps=1e-5, momentum=None, affine=False, track_running_stats=False)
+        self.bn1 = nn.BatchNorm2d(16, momentum=args.momentum, affine=False, track_running_stats=False)
         flattened_list = [y for x in resd_block for y in x]
         flattened_list = list(dict.fromkeys(flattened_list))
         self.layer1 = self._make_layer(block, flattened_list[0], num_blocks[0], stride=1,alpha=0.125)
