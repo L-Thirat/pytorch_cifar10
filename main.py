@@ -187,7 +187,7 @@ def predict(model, dataloader):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--cuda', action="store_true")
-    parser.add_argument('--num-epochs','-ne', type=int, default=10)
+    parser.add_argument('--num-epochs','-ne', type=int, default=50)
     parser.add_argument('--lr', type=float, default=0.1)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--batch-size', type=int, default=128)
