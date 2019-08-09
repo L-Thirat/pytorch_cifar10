@@ -143,7 +143,7 @@ def make_train_dataloader(X, y, batch_size, shuffle):
     dataset = []
     for i_x,i_y in zip(X,y):
         dataset.append([torch.from_numpy(np.asarray(i_x)),i_y])
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=2)#**
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=0)#**
     return dataloader
 
 
@@ -152,7 +152,7 @@ def make_test_dataloader(X, batch_size, shuffle):
     dataset = []
     for i_x in X:
         dataset.append(torch.from_numpy(np.asarray(i_x)))
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=2)#**
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=0)#**
     return dataloader
 
 
