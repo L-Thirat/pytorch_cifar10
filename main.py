@@ -155,11 +155,12 @@ def train_one_epoch(model, dataloader):
     model.train()
     for batch_idx, (inputs, targets) in enumerate(dataloader):
         # learning_rate = args.lr - (batch_idx*(args.lr/(len(list(dataloader)))))
-        if batch_idx>4:
-            learning_rate=0.00001
-        # elif batch_idx>4:
-        #     learning_rate=0.001
-        else:learning_rate=args.lr
+        # if batch_idx>4:
+        #     learning_rate=0.00001
+        # # elif batch_idx>4:
+        # #     learning_rate=0.001
+        # else:learning_rate=args.lr
+        learning_rate=args.lr
         optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=args.momentum, nesterov=False)# weight_decay=5e-4
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
