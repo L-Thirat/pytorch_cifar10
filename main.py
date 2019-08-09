@@ -93,18 +93,18 @@ def train(epoch):
         optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, nesterov=False)# weight_decay=5e-4
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
-        print(inputs)
-        print(net)
         outputs = net(inputs)
-        asd
         loss = criterion(outputs, targets)
         loss.backward()
         optimizer.step()
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
+        print(predicted)
+        asd
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
+
 
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))

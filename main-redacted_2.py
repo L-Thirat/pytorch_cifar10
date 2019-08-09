@@ -16,7 +16,7 @@ import os
 import torch.optim as optim
 
 
-
+import tensorflow as tf
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -34,16 +34,21 @@ import argparse
 # Note: Depending on how you implement your model, you'll likely have to change the parameters of these
 # functions.  They way their shown is just one possble way that the code could be structured.
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
 criterion = nn.CrossEntropyLoss()
 
-import torch.nn.functional as F
+parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
+parser.add_argument('--num_epochs', '-ne',  default=5,action='store_true', help='resume from checkpoint')
+args = parser.parse_args()
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, in_planes, planes, stride=1):
+    def __init__(self, in_planes, planes, stride=1,alp=0.125):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -94,23 +99,25 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10):
+    def __init__(self, block, num_blocks, input_ch,resd_block,num_classes=10):
         super(ResNet, self).__init__()
         self.in_planes = 16
 
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(16, eps=1e-5, momentum=None, affine=False, track_running_stats=False)
-        self.layer1 = self._make_layer(block, 16, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, 32, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, 64, num_blocks[2], stride=2)
-        self.layer4 = self._make_layer(block, 128, num_blocks[3], stride=2)
-        self.linear = nn.Linear(128*block.expansion, num_classes,bias=False)
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=input_ch, stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(16, eps=1e-5, momentum=args.momentum, affine=False, track_running_stats=False)
+        flattened_list = [y for x in resd_block for y in x]
+        flattened_list = list(dict.fromkeys(flattened_list))
+        self.layer1 = self._make_layer(block, flattened_list[0], num_blocks[0], stride=1,alpha=0.125)
+        self.layer2 = self._make_layer(block, flattened_list[1], num_blocks[1], stride=2,alpha=0.125)
+        self.layer3 = self._make_layer(block, flattened_list[2], num_blocks[2], stride=2,alpha=0.125)
+        self.layer4 = self._make_layer(block, flattened_list[3], num_blocks[3], stride=2,alpha=0.125)
+        self.linear = nn.Linear(flattened_list[3]*block.expansion, num_classes,bias=False)
 
-    def _make_layer(self, block, planes, num_blocks, stride):
+    def _make_layer(self, block, planes, num_blocks, stride,alpha):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
         for stride in strides:
-            layers.append(block(self.in_planes, planes, stride))
+            layers.append(block(self.in_planes, planes, stride,alpha))
             self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
 
@@ -127,7 +134,7 @@ class ResNet(nn.Module):
 
 def make_model(input_channels, output_classes, residual_block_sizes, scale_alpha, optimizer, lr, momentum):
     # ... your code here ...
-    model = ResNet(BasicBlock, [2,2,2,2])
+    model = ResNet(BasicBlock, [2,2,2,2], input_channels,residual_block_sizes,num_classes=output_classes)
     return model
 
 
@@ -137,57 +144,29 @@ def make_train_dataloader(X, y, batch_size, shuffle):
     for i_x,i_y in zip(X,y):
         dataset.append([torch.from_numpy(np.asarray(i_x)),i_y])
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=0)#**
-    # asd
-    #
-    # dataloader = []
-    # indices = np.arange(len(X))
-    # i = 0
-    # x_arr=[]
-    # y_arr=[]
-    # while i<batch_size:
-    #     if shuffle:
-    #         np.random.shuffle(indices)
-    #     for i in indices:
-    #         dataloader.append([torch.from_numpy(X[i]),y])
-    #         # x_arr.append(X[i])
-    #         # y_arr.append(y[i])
-    #     i+=1
-    # # X_tensor = torch.FloatTensor(x_arr)
-    # # y_tensor = torch.FloatTensor(y_arr)
-    # # dataloader = [X_tensor,y_tensor]
-
     return dataloader
 
 
 def make_test_dataloader(X, batch_size, shuffle):
     # ... your code here ...
-    dataloader = []
-    indices = np.arange(len(X))
-    i = 0
-    x_arr=[]
-    y_arr=[]
-    while i<batch_size:
-        if shuffle:
-            np.random.shuffle(indices)
-        for i in indices:
-            x_arr.append(X[i])
-        i+=1
-    X_tensor = torch.FloatTensor(x_arr)
-    dataloader = X_tensor
+    dataset = []
+    for i_x in X:
+        dataset.append(torch.from_numpy(np.asarray(i_x)))
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=0)#**
     return dataloader
 
 
 def train_one_epoch(model, dataloader):
     # ... your code here ...
     model.train()
-    print(model)
-    asd
     for batch_idx, (inputs, targets) in enumerate(dataloader):
-        optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, nesterov=False)# weight_decay=5e-4
+        learning_rate = args.lr - (batch_idx*(args.lr/(len(list(dataloader))-1)))
+        optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=args.momentum, nesterov=False)# weight_decay=5e-4
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = model(inputs)
         loss = criterion(outputs, targets)
+
         loss.backward()
         optimizer.step()
 
@@ -196,17 +175,17 @@ def train_one_epoch(model, dataloader):
 
 def predict(model, dataloader):
     # ... your code here ...
-    # model.eval()
-    predictions=[]
+
+    model.eval()
+    predicted = []
     with torch.no_grad():
         for batch_idx, (inputs) in enumerate(dataloader):
             inputs = inputs.to(device)
-            print(model)
-            print(inputs.shape)
-            print("asd")
-            predictions.append(model(inputs))
-
-    return predictions
+            outputs = model(inputs)
+            _, predict_y = outputs.max(1)
+            predicted = np.append(predicted,predict_y)
+    predicted = np.asarray(predicted)
+    return predicted
 
 # --
 # CLI
@@ -231,20 +210,20 @@ if __name__ == '__main__':
     # y_train: vector of [0, 1] class labels for each train image
     # y_test:  vector of [0, 1] class labels for each test image (don't look at these to make predictions!)
 
-    X_train = np.load('X_test.npy')#**
-    X_test = np.load('X_test.npy')
-    y_train = np.load('y_test.npy')#**
-    y_test = np.load('y_test.npy')
+    # X_train = np.load('X_test.npy')#**
+    # X_test = np.load('X_test.npy')
+    # y_train = np.load('y_test.npy')#**
+    # y_test = np.load('y_test.npy')
 
     # X_train = np.load('../data/cifar2/X_train.npy')
     # X_test  = np.load('../data/cifar2/X_test.npy')
     # y_train = np.load('../data/cifar2/y_train.npy')
     # y_test  = np.load('../data/cifar2/y_test.npy')
 
-    # X_train = np.load('data/cifar2/X_train.npy')
-    # X_test  = np.load('data/cifar2/X_test.npy')
-    # y_train = np.load('data/cifar2/y_train.npy')
-    # y_test  = np.load('data/cifar2/y_test.npy')
+    X_train = np.load('data/cifar2/X_train.npy')
+    X_test  = np.load('data/cifar2/X_test.npy')
+    y_train = np.load('data/cifar2/y_train.npy')
+    y_test  = np.load('data/cifar2/y_test.npy')
     
     # --
     # Define model
@@ -275,13 +254,19 @@ if __name__ == '__main__':
             model=model,
             dataloader=make_train_dataloader(X_train, y_train, batch_size=args.batch_size, shuffle=True)
         )
-        
+
         # Evaluate
         preds = predict(
             model=model,
             dataloader=make_test_dataloader(X_test, batch_size=args.batch_size, shuffle=False)
         )
-        
+        # print(len(preds))
+        # print(preds)
+        # print(y_test)
+        # check = np.ravel(preds)
+        # preds = np.array(check)
+
+        # print(check.shape)
         assert isinstance(preds, np.ndarray)
         assert preds.shape[0] == X_test.shape[0]
         
