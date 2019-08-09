@@ -42,7 +42,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, in_planes, planes, stride=1,alp=0.125):
+    def __init__(self, in_planes, planes, stride=1):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -107,10 +107,10 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(16, eps=1e-5, momentum=args.momentum, affine=False, track_running_stats=False)
         flattened_list = [y for x in resd_block for y in x]
         flattened_list = list(dict.fromkeys(flattened_list))
-        self.layer1 = self._make_layer(block, flattened_list[0], num_blocks[0], stride=1,alpha=0.125)
-        self.layer2 = self._make_layer(block, flattened_list[1], num_blocks[1], stride=2,alpha=0.125)
-        self.layer3 = self._make_layer(block, flattened_list[2], num_blocks[2], stride=2,alpha=0.125)
-        self.layer4 = self._make_layer(block, flattened_list[3], num_blocks[3], stride=2,alpha=0.125)
+        self.layer1 = self._make_layer(block, flattened_list[0], num_blocks[0], stride=1)
+        self.layer2 = self._make_layer(block, flattened_list[1], num_blocks[1], stride=2)
+        self.layer3 = self._make_layer(block, flattened_list[2], num_blocks[2], stride=2)
+        self.layer4 = self._make_layer(block, flattened_list[3], num_blocks[3], stride=2)
         self.linear = nn.Linear(flattened_list[3]*block.expansion, num_classes,bias=False)
 
     def _make_layer(self, block, planes, num_blocks, stride):
